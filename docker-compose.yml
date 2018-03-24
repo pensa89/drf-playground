@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+    db:
+        image: postgres:9.6-alpine
+        container_name: postgres-playground
+        ports:
+            - "5432:5432"
+        volumes:
+            - ./postgres-data:/var/lib/postgresql/data
+
+
+    nginx:
+        image: nginx:1.13.10-alpine
+        container_name: playground-python-nginx
+        ports:
+            - "8000:8000"
+        volumes:
+            - .:/project
+            - ./docker/nginx:/etc/nginx/conf.d
+        depends_on:
+            - web
+    
+    web:
+        container_name: django-playground
+        build:
+            context: .
+        volumes:
+            - .:/project
+        expose:
+            - "8000"
+        stdin_open: true
+        tty: true
+        depends_on:
+            - db
+            - nginx
+        # env_file: ./config/.env_local
